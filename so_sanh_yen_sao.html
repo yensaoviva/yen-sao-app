@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng Dẫn Tương Tác: So Sánh Tổ Yến Việt Nam và Nhập Khẩu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Harmony -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation for easy access to key sections. The core of the app is a side-by-side comparison layout to directly address the user's primary goal. This is followed by an interactive chart for price visualization, a grid for non-price factors, and a step-by-step buying guide. A new interactive comparison tool has been added to provide personalized recommendations. This structure guides the user from broad comparison to specific details and finally to an actionable decision, enhancing usability and information retention. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Price comparison -> Goal: Compare -> Viz: Interactive Bar Chart (Chart.js) -> Interaction: Buttons to filter by product type (Raw, Cleaned, Processed) -> Justification: Allows users to dynamically compare price ranges for the products they are most interested in, making data more relevant and engaging than a static table.
+        - Report Info: Vietnamese vs. Imported Pros/Cons/Factors -> Goal: Compare/Organize -> Viz: Two-column layout with expandable accordion cards -> Interaction: Click to expand/collapse -> Justification: Presents a large amount of comparative information in a compact, user-controlled format, preventing overwhelm and facilitating direct comparison.
+        - Report Info: General Quality Factors -> Goal: Inform/Organize -> Viz: Grid of styled cards with icons -> Interaction: Hover effects/Click for details (conceptual) -> Justification: Visually breaks down complex factors into digestible, easy-to-scan components.
+        - Report Info: Buying Guide -> Goal: Inform -> Viz: Numbered checklist/process flow -> Interaction: Static -> Justification: Provides a clear, actionable sequence for the user to follow.
+        - New: Interactive Comparison Tool -> Goal: Recommend -> Viz: Form with dropdowns and dynamic text output -> Interaction: Select options and click button to get recommendation -> Justification: Directly addresses the user's need for a personalized comparison based on their specific preferences.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #44403c;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #c2410c;
+            border-bottom-color: #c2410c;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .accordion-button.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+        .filter-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .filter-btn.active {
+            background-color: #c2410c;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-orange-50/30">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold text-stone-800">Cẩm Nang Yến Sào</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#introduction" class="nav-link text-stone-600 font-medium pb-1">Giới Thiệu</a>
+                    <a href="#comparison" class="nav-link text-stone-600 font-medium pb-1">So Sánh</a>
+                    <a href="#price-chart" class="nav-link text-stone-600 font-medium pb-1">Biểu Đồ Giá</a>
+                    <a href="#quality-factors" class="nav-link text-stone-600 font-medium pb-1">Yếu Tố Chất Lượng</a>
+                    <a href="#buying-guide" class="nav-link text-stone-600 font-medium pb-1">Hướng Dẫn Mua</a>
+                    <a href="#comparison-tool" class="nav-link text-stone-600 font-medium pb-1">Công Cụ So Sánh</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="introduction" class="py-16 md:py-24 text-center bg-white">
+            <div class="container mx-auto px-6">
+                <p class="text-orange-600 font-semibold mb-2">Hướng Dẫn Mua Yến Sào Thông Minh Của Bạn</p>
+                <h2 class="text-4xl md:text-5xl font-bold text-stone-800 mb-4">Điều Hướng Giá Tổ Yến</h2>
+                <p class="max-w-3xl mx-auto text-lg text-stone-600">
+                    Tổ yến là một món ăn quý giá, nhưng thị trường có thể phức tạp. Hiểu rõ sự khác biệt giữa yến sào Việt Nam và yến nhập khẩu là chìa khóa để mua hàng thông minh. Hướng dẫn này cung cấp cái nhìn sâu sắc về nguồn gốc, giá cả và chất lượng để giúp bạn chọn sản phẩm phù hợp nhất với nhu cầu của mình.
+                </p>
+            </div>
+        </section>
+
+        <section id="comparison" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800">Yến Sào Việt Nam vs. Nhập Khẩu: So Sánh Trực Tiếp</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto">Khám phá các đặc điểm chính, yếu tố giá cả, và ưu nhược điểm của tổ yến từ các nguồn gốc khác nhau. Nhấp vào bất kỳ danh mục nào để mở rộng và xem chi tiết.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-center text-orange-700 mb-6">🇻🇳 Yến Sào Việt Nam</h3>
+                        <div class="space-y-4 accordion-container">
+                            <div class="border border-stone-200 rounded-lg">
+                                <button class="accordion-button w-full flex justify-between items-center p-4 font-semibold text-stone-700">
+                                    <span>Đặc Điểm & Nguồn Gốc</span>
+                                    <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                                </button>
+                                <div class="accordion-content px-4">
+                                    <ul class="list-disc list-inside text-stone-600 pb-4 space-y-2">
+                                        <li><strong>Vùng chính:</strong> Khánh Hòa, Phú Yên và các vùng ven biển.</li>
+                                        <li><strong>Các loại:</strong> Nổi tiếng với cả Yến Đảo quý hiếm và Yến Nhà chất lượng cao.</li>
+                                        <li><strong>Chế biến:</strong> Thường dựa vào phương pháp nhặt lông thủ công tỉ mỉ, truyền thống.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="border border-stone-200 rounded-lg">
+                                <button class="accordion-button w-full flex justify-between items-center p-4 font-semibold text-stone-700">
+                                    <span>Các Yếu Tố Ảnh Hưởng Giá</span>
+                                    <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                                </button>
+                                <div class="accordion-content px-4">
+                                    <ul class="list-disc list-inside text-stone-600 pb-4 space-y-2">
+                                        <li><strong>Độ quý hiếm:</strong> Yến đảo khó thu hoạch, có giá cao cấp.</li>
+                                        <li><strong>Nhân công:</strong> Nhặt lông thủ công tốn nhiều công sức làm tăng chi phí.</li>
+                                        <li><strong>Nhu cầu trong nước:</strong> Nhu cầu cao trong nước có thể ảnh hưởng đến giá.</li>
+                                        <li><strong>Độ tinh khiết:</strong> Tổ yến ít tạp chất tự nhiên có giá trị cao hơn.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="border border-stone-200 rounded-lg">
+                                <button class="accordion-button w-full flex justify-between items-center p-4 font-semibold text-stone-700">
+                                    <span>Ưu & Nhược Điểm</span>
+                                    <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                                </button>
+                                <div class="accordion-content px-4">
+                                    <div class="pb-4">
+                                        <h4 class="font-semibold text-green-700">Ưu điểm:</h4>
+                                        <ul class="list-disc list-inside text-stone-600 space-y-1 mt-1">
+                                            <li>Cảm nhận về độ tươi và tính xác thực.</li>
+                                            <li>Hỗ trợ kinh tế địa phương.</li>
+                                            <li>Đặc điểm vùng miền độc đáo và hàm lượng khoáng chất (đặc biệt yến đảo).</li>
+                                        </ul>
+                                        <h4 class="font-semibold text-red-700 mt-3">Nhược điểm:</h4>
+                                        <ul class="list-disc list-inside text-stone-600 space-y-1 mt-1">
+                                            <li>Có thể đắt hơn đối với các loại cao cấp.</li>
+                                            <li>Nguồn cung có thể hạn chế hơn so với sản phẩm nhập khẩu sản xuất hàng loạt.</li>
+                                            <li>Kiểm soát chất lượng có thể khác nhau giữa các nhà sản xuất nhỏ.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-center text-orange-700 mb-6">🌐 Yến Sào Nhập Khẩu</h3>
+                        <div class="space-y-4 accordion-container">
+                            <div class="border border-stone-200 rounded-lg">
+                                <button class="accordion-button w-full flex justify-between items-center p-4 font-semibold text-stone-700">
+                                    <span>Đặc Điểm & Nguồn Gốc</span>
+                                    <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                                </button>
+                                <div class="accordion-content px-4">
+                                    <ul class="list-disc list-inside text-stone-600 pb-4 space-y-2">
+                                        <li><strong>Các nước xuất khẩu chính:</strong> Indonesia, Malaysia, Thái Lan.</li>
+                                        <li><strong>Các loại phổ biến:</strong> Chủ yếu là Yến Nhà từ các trang trại yến lớn.</li>
+                                        <li><strong>Chế biến:</strong> Thường sử dụng các phương pháp làm sạch công nghiệp, tiêu chuẩn hóa hơn.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="border border-stone-200 rounded-lg">
+                                <button class="accordion-button w-full flex justify-between items-center p-4 font-semibold text-stone-700">
+                                    <span>Các Yếu Tố Ảnh Hưởng Giá</span>
+                                    <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                                </button>
+                                <div class="accordion-content px-4">
+                                    <ul class="list-disc list-inside text-stone-600 pb-4 space-y-2">
+                                        <li><strong>Quy mô sản xuất:</strong> Trang trại lớn có thể dẫn đến giá cạnh tranh hơn.</li>
+                                        <li><strong>Quy định & Thuế quan xuất nhập khẩu:</strong> Ảnh hưởng đến chi phí cuối cùng.</li>
+                                        <li><strong>Uy tín thương hiệu quốc tế:</strong> Các thương hiệu lớn có giá cao hơn.</li>
+                                        <li><strong>Chi phí vận chuyển & Hậu cần:</strong> Được tính vào giá.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="border border-stone-200 rounded-lg">
+                                <button class="accordion-button w-full flex justify-between items-center p-4 font-semibold text-stone-700">
+                                    <span>Ưu & Nhược Điểm</span>
+                                    <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                                </button>
+                                <div class="accordion-content px-4">
+                                    <div class="pb-4">
+                                        <h4 class="font-semibold text-green-700">Ưu điểm:</h4>
+                                        <ul class="list-disc list-inside text-stone-600 space-y-1 mt-1">
+                                            <li>Khả năng cung cấp và đa dạng loại rộng rãi hơn.</li>
+                                            <li>Giá cả có thể cạnh tranh hơn đối với các loại tiêu chuẩn.</li>
+                                            <li>Chất lượng ổn định từ các thương hiệu lớn, có uy tín.</li>
+                                        </ul>
+                                        <h4 class="font-semibold text-red-700 mt-3">Nhược điểm:</h4>
+                                        <ul class="list-disc list-inside text-stone-600 space-y-1 mt-1">
+                                            <li>Ít minh bạch hơn trong chuỗi cung ứng.</li>
+                                            <li>Thời gian từ thu hoạch đến tay người tiêu dùng dài hơn.</li>
+                                            <li>Tiêu chuẩn chất lượng có thể khác nhau đáng kể tùy theo quốc gia và thương hiệu.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="price-chart" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800">Biểu Đồ So Sánh Giá Tương Tác</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto">Chọn loại sản phẩm để xem phạm vi giá minh họa cho 100g. Giá chỉ mang tính tham khảo và có thể thay đổi tùy thuộc vào cấp độ và người bán.</p>
+                </div>
+                <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                    <button class="filter-btn active px-4 py-2 rounded-full font-semibold bg-stone-200 text-stone-700" data-filter="all">Tất Cả Các Loại</button>
+                    <button class="filter-btn px-4 py-2 rounded-full font-semibold bg-stone-200 text-stone-700" data-filter="raw">Yến Thô</button>
+                    <button class="filter-btn px-4 py-2 rounded-full font-semibold bg-stone-200 text-stone-700" data-filter="cleaned">Yến Đã Làm Sạch</button>
+                    <button class="filter-btn px-4 py-2 rounded-full font-semibold bg-stone-200 text-stone-700" data-filter="processed">Hũ Yến Chế Biến Sẵn</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="birdNestPriceChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <section id="quality-factors" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800">Các Yếu Tố Chất Lượng Chính Ảnh Hưởng Đến Giá</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto">Bất kể nguồn gốc, các yếu tố này đóng vai trò quan trọng trong việc xác định giá cuối cùng và giá trị của tổ yến.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h4 class="font-bold text-xl mb-2 text-orange-700">Loại Tổ Yến</h4>
+                        <p class="text-stone-600"><strong>Yến Đảo</strong> quý hiếm và giàu khoáng chất hơn, nên đắt hơn. <strong>Yến Nhà</strong> phổ biến hơn và được nuôi trong môi trường kiểm soát.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h4 class="font-bold text-xl mb-2 text-orange-700">Cấp Độ & Chất Lượng</h4>
+                        <p class="text-stone-600">Các cấp độ cao hơn dựa trên <strong>màu sắc</strong> (yến đỏ hiếm nhất), <strong>độ sạch</strong> (ít lông/tạp chất), <strong>kích thước</strong> và <strong>độ nguyên vẹn</strong> của tổ.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h4 class="font-bold text-xl mb-2 text-orange-700">Mức Độ Chế Biến</h4>
+                        <p class="text-stone-600"><strong>Yến Thô</strong> rẻ nhất nhưng cần làm sạch nhiều. <strong>Yến Đã Làm Sạch</strong> đắt hơn do chi phí nhân công. Sản phẩm <strong>Ăn Liền</strong> có giá cao nhất.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h4 class="font-bold text-xl mb-2 text-orange-700">Thương Hiệu & Chứng Nhận</h4>
+                        <p class="text-stone-600">Các thương hiệu uy tín có chứng nhận chất lượng (như HACCP, ISO) mang lại niềm tin và sự nhất quán, thường đi kèm với giá cao hơn.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h4 class="font-bold text-xl mb-2 text-orange-700">Độ Nguyên Vẹn</h4>
+                        <p class="text-stone-600">Tổ yến nguyên vẹn, hình dáng hoàn hảo được ưa chuộng để làm quà và có giá cao nhất. Các mảnh vỡ hoặc sợi yến có giá phải chăng hơn để sử dụng cá nhân.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <h4 class="font-bold text-xl mb-2 text-orange-700">Màu Sắc</h4>
+                        <p class="text-stone-600"><strong>Trắng</strong> là phổ biến nhất. <strong>Vàng</strong> ít phổ biến hơn. <strong>Đỏ</strong> hoặc "Yến Huyết" là hiếm nhất và đắt nhất, được cho là có giá trị dinh dưỡng cao nhất.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="buying-guide" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800">Hướng Dẫn Mua Hàng Thông Minh Của Bạn</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto">Thực hiện các bước sau để đưa ra quyết định mua hàng sáng suốt và tự tin.</p>
+                </div>
+                <div class="max-w-3xl mx-auto">
+                    <div class="relative pl-8 space-y-8">
+                        <div class="absolute left-0 h-full border-l-2 border-orange-200"></div>
+                        <div class="relative">
+                            <div class="absolute -left-[38px] top-1 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                            <h4 class="font-bold text-xl text-stone-800">Xác Định Nhu Cầu & Ngân Sách</h4>
+                            <p class="text-stone-600 mt-1">Xác định mục đích sử dụng chính của bạn (ví dụ: sức khỏe cá nhân, quà tặng, dịp đặc biệt) và đặt ra ngân sách thực tế. Điều này sẽ giúp thu hẹp đáng kể các lựa chọn của bạn.</p>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-[38px] top-1 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                            <h4 class="font-bold text-xl text-stone-800">Ưu Tiên Chất Lượng Hơn Giá Cả</h4>
+                            <p class="text-stone-600 mt-1">Hãy nhớ rằng giá thấp nhất không phải lúc nào cũng có nghĩa là giá trị tốt nhất. Trong thế giới yến sào, giá thường là một chỉ số mạnh mẽ về chất lượng, độ tinh khiết và tính xác thực.</p>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-[38px] top-1 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                            <h4 class="font-bold text-xl text-stone-800">Xác Minh Tính Xác Thực & Nguồn Gốc</h4>
+                            <p class="text-stone-600 mt-1">Mua từ các nhà cung cấp uy tín, minh bạch về nguồn gốc của tổ yến. Tìm kiếm các chứng nhận và nhận biết các phương pháp làm giả phổ biến như tẩy trắng hoặc thêm chất độn.</p>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute -left-[38px] top-1 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">4</div>
+                            <h4 class="font-bold text-xl text-stone-800">Chọn Nhà Cung Cấp Uy Tín</h4>
+                            <p class="text-stone-600 mt-1">Dù mua trực tuyến hay tại cửa hàng, hãy chọn các nhà cung cấp đã có tên tuổi với những đánh giá tích cực. Họ có nhiều khả năng giữ vững chất lượng sản phẩm và cung cấp thông tin chính xác.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison-tool" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800">Công Cụ So Sánh Tương Tác</h2>
+                    <p class="mt-4 text-lg text-stone-600 max-w-3xl mx-auto">Trả lời một vài câu hỏi để nhận được đề xuất cá nhân hóa về việc yến sào Việt Nam hay yến nhập khẩu có thể tốt hơn cho bạn.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+                    <div class="space-y-6">
+                        <div>
+                            <label for="budget" class="block text-lg font-medium text-stone-700 mb-2">1. Ưu tiên về ngân sách của bạn:</label>
+                            <select id="budget" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md shadow-sm">
+                                <option value="any">Bất kỳ (Chất lượng là quan trọng nhất)</option>
+                                <option value="moderate">Vừa phải (Giá trị tốt)</option>
+                                <option value="strict">Nghiêm ngặt (Giá cả phải chăng nhất)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="priority" class="block text-lg font-medium text-stone-700 mb-2">2. Ưu tiên hàng đầu của bạn:</label>
+                            <select id="priority" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md shadow-sm">
+                                <option value="authenticity">Tính xác thực & Nguồn gốc truyền thống</option>
+                                <option value="availability">Khả năng cung cấp rộng rãi & Đa dạng</option>
+                                <option value="consistency">Chất lượng & Thương hiệu ổn định</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="type" class="block text-lg font-medium text-stone-700 mb-2">3. Mức độ chế biến ưu tiên:</label>
+                            <select id="type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md shadow-sm">
+                                <option value="raw">Yến thô (Tự làm sạch)</option>
+                                <option value="cleaned">Yến đã làm sạch (Sẵn sàng chế biến)</option>
+                                <option value="processed">Yến chế biến sẵn (Ăn liền)</option>
+                            </select>
+                        </div>
+                        <button id="get-recommendation" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-md shadow-lg transition-colors">
+                            Nhận Đề Xuất Của Tôi
+                        </button>
+                    </div>
+                    <div id="recommendation-result" class="mt-8 p-6 bg-orange-50 rounded-lg border border-orange-200 text-stone-700 hidden">
+                        <h3 class="text-xl font-bold text-orange-800 mb-3">Đề Xuất Cá Nhân Hóa Của Bạn:</h3>
+                        <p id="recommendation-text" class="text-lg"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Cẩm Nang Yến Sào Tương Tác. Mọi thông tin chỉ mang tính minh họa.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartData = {
+                all: {
+                    labels: ['Yến Thô Việt Nam', 'Yến Thô Nhập Khẩu', 'Yến Đã Làm Sạch Việt Nam', 'Yến Đã Làm Sạch Nhập Khẩu', 'Hũ Yến Chế Biến Sẵn Việt Nam', 'Hũ Yến Chế Biến Sẵn Nhập Khẩu'],
+                    datasets: [{
+                        label: 'Phạm Vi Giá (USD/100g)',
+                        data: [[1500, 2500], [1200, 2200], [2000, 3500], [1800, 3200], [400, 700], [350, 650]],
+                        backgroundColor: ['rgba(234, 88, 12, 0.6)', 'rgba(100, 116, 139, 0.6)', 'rgba(234, 88, 12, 0.8)', 'rgba(100, 116, 139, 0.8)', 'rgba(234, 88, 12, 0.4)', 'rgba(100, 116, 139, 0.4)'],
+                        borderColor: ['rgb(234, 88, 12)', 'rgb(100, 116, 139)', 'rgb(234, 88, 12)', 'rgb(100, 116, 139)', 'rgb(234, 88, 12)', 'rgb(100, 116, 139)'],
+                        borderWidth: 1,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7,
+                        borderSkipped: false,
+                    }]
+                },
+                raw: {
+                    labels: ['Yến Thô Việt Nam', 'Yến Thô Nhập Khẩu'],
+                    datasets: [{
+                        label: 'Phạm Vi Giá (USD/100g)',
+                        data: [[1500, 2500], [1200, 2200]],
+                        backgroundColor: ['rgba(234, 88, 12, 0.6)', 'rgba(100, 116, 139, 0.6)'],
+                        borderColor: ['rgb(234, 88, 12)', 'rgb(100, 116, 139)'],
+                        borderWidth: 1,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7,
+                        borderSkipped: false,
+                    }]
+                },
+                cleaned: {
+                    labels: ['Yến Đã Làm Sạch Việt Nam', 'Yến Đã Làm Sạch Nhập Khẩu'],
+                    datasets: [{
+                        label: 'Phạm Vi Giá (USD/100g)',
+                        data: [[2000, 3500], [1800, 3200]],
+                        backgroundColor: ['rgba(234, 88, 12, 0.8)', 'rgba(100, 116, 139, 0.8)'],
+                        borderColor: ['rgb(234, 88, 12)', 'rgb(100, 116, 139)'],
+                        borderWidth: 1,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7,
+                        borderSkipped: false,
+                    }]
+                },
+                processed: {
+                    labels: ['Hũ Yến Chế Biến Sẵn Việt Nam', 'Hũ Yến Chế Biến Sẵn Nhập Khẩu'],
+                    datasets: [{
+                        label: 'Phạm Vi Giá (USD/100g)',
+                        data: [[400, 700], [350, 650]],
+                        backgroundColor: ['rgba(234, 88, 12, 0.4)', 'rgba(100, 116, 139, 0.4)'],
+                        borderColor: ['rgb(234, 88, 12)', 'rgb(100, 116, 139)'],
+                        borderWidth: 1,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7,
+                        borderSkipped: false,
+                    }]
+                }
+            };
+
+            const ctx = document.getElementById('birdNestPriceChart').getContext('2d');
+            let priceChart;
+
+            function createChart(dataKey) {
+                if (priceChart) {
+                    priceChart.destroy();
+                }
+
+                const data = chartData[dataKey];
+                const labels = data.labels;
+                const datasets = data.datasets;
+
+                priceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels.map(label => {
+                            const words = label.split(' ');
+                            let line = '';
+                            let lines = [];
+                            for (let i = 0; i < words.length; i++) {
+                                if ((line + words[i]).length > 16 && line.length > 0) {
+                                    lines.push(line.trim());
+                                    line = words[i] + ' ';
+                                } else {
+                                    line += words[i] + ' ';
+                                }
+                            }
+                            lines.push(line.trim());
+                            return lines;
+                        }),
+                        datasets: datasets.map(dataset => ({
+                            ...dataset,
+                            data: dataset.data.map(range => (range[0] + range[1]) / 2), // Use midpoint for bar height
+                            minBarLength: 5, // Ensures small bars are visible
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y', // Horizontal bars
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label || '';
+                                        const dataIndex = context.dataIndex;
+                                        const originalRange = datasets[0].data[dataIndex]; // Get original range from the first (and only) dataset
+                                        return `${label}: $${originalRange[0]} - $${originalRange[1]}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Giá (USD/100g)'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initial chart creation
+            createChart('all');
+
+            // Filter button event listeners
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    createChart(this.dataset.filter);
+                });
+            });
+
+            // Accordion functionality
+            document.querySelectorAll('.accordion-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const arrow = this.querySelector('.accordion-arrow');
+
+                    this.classList.toggle('open');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('nav a').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+
+                    // Update active nav link class
+                    document.querySelectorAll('nav a').forEach(link => link.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Set initial active nav link based on scroll position (optional)
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('nav a');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.7 
+            };
+
+            const sectionObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === '#' + entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                sectionObserver.observe(section);
+            });
+
+            // Interactive Comparison Tool Logic
+            const getRecommendationBtn = document.getElementById('get-recommendation');
+            const recommendationResultDiv = document.getElementById('recommendation-result');
+            const recommendationText = document.getElementById('recommendation-text');
+
+            getRecommendationBtn.addEventListener('click', function() {
+                const budget = document.getElementById('budget').value;
+                const priority = document.getElementById('priority').value;
+                const type = document.getElementById('type').value;
+                let recommendation = "";
+
+                if (budget === "strict") {
+                    if (priority === "availability") {
+                        recommendation = "Với ngân sách eo hẹp và ưu tiên sự sẵn có, **yến sào nhập khẩu (đặc biệt là các loại đã làm sạch hoặc chế biến sẵn)** có thể là lựa chọn phù hợp hơn. Chúng thường có giá cạnh tranh hơn do quy mô sản xuất lớn.";
+                    } else {
+                        recommendation = "Với ngân sách eo hẹp, việc tìm kiếm tổ yến chất lượng cao, xác thực (Việt Nam hay nhập khẩu) có thể khó khăn. Hãy tập trung vào những người bán uy tín đối với **yến nhập khẩu đã làm sạch tiêu chuẩn** hoặc **yến thô Việt Nam bị vỡ** nếu bạn sẵn sàng tự làm sạch để có giá trị tốt hơn.";
+                    }
+                } else if (budget === "moderate") {
+                    if (priority === "authenticity") {
+                        recommendation = "Với ngân sách vừa phải và tập trung vào tính xác thực, nguồn gốc truyền thống, **yến sào Việt Nam (đặc biệt là yến nhà hoặc yến thô được thu hoạch tốt)** rất được khuyến nghị. Bạn có thể tìm thấy chất lượng tốt với giá cả hợp lý.";
+                    } else if (priority === "availability") {
+                        recommendation = "Ngân sách vừa phải với ưu tiên sự sẵn có rộng rãi có nghĩa là bạn có nhiều lựa chọn. Hãy cân nhắc các **thương hiệu nhập khẩu nổi tiếng** cung cấp chất lượng ổn định trên nhiều loại (yến thô, yến đã làm sạch, yến chế biến sẵn).";
+                    } else { // consistency
+                        recommendation = "Nếu sự ổn định và thương hiệu là yếu tố then chốt với ngân sách vừa phải, cả **thương hiệu Việt Nam uy tín** và **thương hiệu nhập khẩu quốc tế đã có tên tuổi** đều mang đến những lựa chọn tuyệt vời. Hãy tìm kiếm các sản phẩm có chứng nhận.";
+                    }
+                } else { // budget === "any"
+                    if (priority === "authenticity") {
+                        recommendation = "Với chất lượng là yếu tố then chốt và mong muốn về tính xác thực, **yến sào Việt Nam cao cấp (đặc biệt là yến đảo loại cao cấp hoặc các loại đã được làm sạch thủ công tỉ mỉ)** sẽ là một lựa chọn tuyệt vời. Hãy tập trung vào các nguồn trực tiếp từ trang trại hoặc các nhà cung cấp Việt Nam rất uy tín.";
+                    } else if (priority === "availability") {
+                        recommendation = "Nếu sự sẵn có rộng rãi và đa dạng là mối quan tâm chính của bạn với ngân sách mở, hãy khám phá nhiều loại **tổ yến nhập khẩu cao cấp** từ nhiều nguồn gốc khác nhau. Bạn sẽ tìm thấy một lựa chọn lớn về các cấp độ và loại.";
+                    } else { // consistency
+                        recommendation = "Đối với ngân sách mở và tập trung mạnh vào chất lượng và thương hiệu ổn định, bạn có thể chọn từ các **thương hiệu Việt Nam hoặc nhập khẩu hàng đầu** đã có lịch sử đã được chứng minh và các chứng nhận mạnh mẽ. Hãy cân nhắc các hũ yến chế biến sẵn cao cấp để tiện lợi và đảm bảo sự ổn định.";
+                    }
+                }
+
+                if (type === "raw") {
+                    recommendation += " Vì bạn thích yến thô, hãy nhớ rằng **yến thô Việt Nam** thường được đánh giá cao về trạng thái tự nhiên, trong khi **yến thô nhập khẩu** có thể mang lại giá trị tốt với số lượng lớn hơn. Hãy chuẩn bị cho quá trình làm sạch.";
+                } else if (type === "cleaned") {
+                    recommendation += " Đối với yến đã làm sạch, cả **lựa chọn của Việt Nam và nhập khẩu** đều mang lại sự tiện lợi. Yến đã làm sạch của Việt Nam có thể giữ được nhiều đặc tính truyền thống hơn, trong khi yến nhập khẩu thường có quy trình làm sạch tiêu chuẩn hóa.";
+                } else { // processed
+                    recommendation += " Nếu bạn thích các hũ yến chế biến sẵn (ăn liền), cả **thương hiệu Việt Nam và nhập khẩu** đều cung cấp các lựa chọn tiện lợi. Hãy tập trung vào các thương hiệu có danh sách thành phần rõ ràng và đánh giá tốt về chất lượng và hương vị.";
+                }
+
+                recommendationText.textContent = recommendation;
+                recommendationResultDiv.classList.remove('hidden');
+                recommendationResultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
